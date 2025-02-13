@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  name      String?
+  avatarUrl String?
+  userRoles UserRole[]
+  addressId String?    @unique
+  phoneId   String?    @unique
+  address   Address?   @relation(fields: [addressId], references: [id], onDelete: Cascade)
+  phone     Phone?     @relation(fields: [phoneId], references: [id], onDelete: Cascade)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  deletedAt DateTime?
+
+  @@map("users")
+}
+
+model Institute {
+  id            String     @id @default(cuid())
+  code          String     @unique
+  name          String
+  corporateName String?
+  website       String?
+  logoUrl       String?
+  establishedAt DateTime?
+  description   String?
+  type          String?
+  isActive      Boolean    @default(true)
+  userRoles     UserRole[]
+  addressId     String?    @unique
+  phoneId       String?    @unique
+  address       Address?   @relation(fields: [addressId], references: [id], onDelete: Cascade)
+  phone         Phone?     @relation(fields: [phoneId], references: [id], onDelete: Cascade)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  deletedAt     DateTime?
+
+  @@map("institutes")
+}
+
+model Role {
+  id        String     @id @default(cuid())
+  name      String     @unique
+  userRoles UserRole[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  deletedAt DateTime?
+
+  @@map("roles")
+}
+
+model UserRole {
+  id          String    @id @default(cuid())
+  userId      String
+  roleId      String
+  instituteId String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role        Role      @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  institute   Institute @relation(fields: [instituteId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  @@unique([userId, roleId, instituteId])
+  @@map("user_roles")
+}
+
+model Address {
+  id        String     @id @default(cuid())
+  street    String?
+  city      String?
+  state     String?
+  zipCode   String?
+  country   String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  deletedAt DateTime?
+  User      User?
+  Institute Institute?
+
+  @@map("addresses")
+}
+
+model Phone {
+  id        String     @id @default(cuid())
+  number    String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  deletedAt DateTime?
+  User      User?
+  Institute Institute?
+
+  @@map("phones")
+}
